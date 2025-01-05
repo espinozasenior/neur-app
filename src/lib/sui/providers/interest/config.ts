@@ -1,0 +1,1 @@
+export const ROUTES_QUOTES_AMOUNT_OBJECT_INDEX = 2;

@@ -373,7 +373,7 @@ const Footer = () => {
 };
 
 export default function Home() {
-  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true';
+  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'false';
   const router = useRouter();
   let { login } = useLogin({
     onComplete: (

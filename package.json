@@ -20,7 +20,12 @@
     "@ai-sdk/anthropic": "^1.0.5",
     "@ai-sdk/openai": "^1.0.10",
     "@bonfida/spl-name-service": "^3.0.7",
+    "@cetusprotocol/cetus-sui-clmm-sdk": "^3.17.8",
+    "@flowx-pkg/ts-sdk": "^0.0.11",
+    "@interest-protocol/clamm-sdk": "6.1.1-alpha",
     "@mem0/vercel-ai-provider": "^0.0.10",
+    "@mysten/sui.js": "0.42.0",
+    "@mysten/sui.js-0.51.2": "npm:@mysten/sui.js@^0.51.2",
     "@prisma/client": "6.1.0",
     "@privy-io/react-auth": "^1.98.2",
     "@privy-io/server-auth": "^1.17.0",
@@ -39,13 +44,18 @@
     "@radix-ui/react-tooltip": "^1.1.6",
     "@remixicon/react": "^4.6.0",
     "@solana/web3.js": "1.98.0",
+    "@suiet/wallet-kit": "^0.3.3",
     "@vercel/analytics": "^1.4.1",
     "@vercel/speed-insights": "^1.1.0",
+    "aftermath-ts-sdk": "^1.1.32",
     "ai": "^4.0.20",
+    "bech32": "^2.0.0",
+    "bignumber.js": "^9.1.2",
     "bs58": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "decimal.js": "^10.4.3",
     "framer-motion": "^11.15.0",
     "lucide-react": "^0.468.0",
     "mem0ai": "^1.0.29",
@@ -66,6 +76,7 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "tsparticles-slim": "^2.12.0",
+    "turbos-clmm-sdk": "^2.1.0",
     "uuid": "^11.0.3",
     "yet-another-react-lightbox": "^3.21.7",
     "zod": "^3.24.1",
@@ -74,23 +85,44 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@types/bn.js": "^5.1.1",
+    "@types/jest": "^29.5.3",
     "@types/node": "^20.17.10",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.17.0",
     "eslint-config-next": "15.1.0",
+    "jest": "^29.7.0",
     "postcss": "^8.4.49",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.12",
     "prisma": "^6.1.0",
+    "redis": "^4.6.12",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^3.4.17",
+    "ts-jest": "^29.1.2",
+    "tsup": "^8.0.1",
     "typescript": "^5.7.2"
   },
   "packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf",
   "pnpm": {
     "patchedDependencies": {
       "solana-agent-kit": "patches/solana-agent-kit.patch"
+    }
+  },
+  "overrides": {
+    "@cetusprotocol/cetus-sui-clmm-sdk": {
+      "@mysten/sui.js": "0.42.0"
+    },
+    "@flowx-pkg/ts-sdk": {
+      "@mysten/sui.js": "0.41.2"
+    },
+    "ip": "2.0.1",
+    "@interest-protocol/clamm-sdk": {
+      "@mysten/sui.js": "0.51.2"
+    },
+    "aftermath-ts-sdk": {
+      "@mysten/sui.js": "0.42.0"
     }
   }
 }
