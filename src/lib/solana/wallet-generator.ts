@@ -21,7 +21,7 @@ export async function decryptPrivateKey(encryptedPrivateKey: string) {
 }
 
 /**
- * Generate exposed keypair
+ * Generate exposed keypair for Sui
  */
 async function generateExposedKeyPair() {
   // Generate Ed25519 keypair
@@ -40,17 +40,13 @@ async function generateExposedKeyPair() {
     keypair.privateKey,
   );
 
-  // Solana private key needs to include both 32 bytes of private key and 32 bytes of public key
-  const privateKeyBytes = new Uint8Array(privateKeyBuffer.slice(-32)); // Extract private key part
-  const publicKeyBytes = new Uint8Array(publicKeyBuffer); // Extract public key part
-  const solanaPrivateKey = new Uint8Array([
-    ...privateKeyBytes,
-    ...publicKeyBytes,
-  ]); // 64 bytes format
+  // For Sui, we only need the 32-byte private key
+  const privateKeyBytes = new Uint8Array(privateKeyBuffer.slice(-32));
+  const publicKeyBytes = new Uint8Array(publicKeyBuffer);
 
   // Convert to Base58 format
   const publicKeyBase58 = bs58.encode(publicKeyBytes);
-  const privateKeyBase58 = bs58.encode(solanaPrivateKey);
+  const privateKeyBase58 = bs58.encode(privateKeyBytes); // Only encode the private key bytes
 
   return {
     publicKey: publicKeyBase58,
