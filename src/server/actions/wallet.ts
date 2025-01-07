@@ -16,6 +16,8 @@ import { ActionResponse, actionClient } from '@/lib/safe-action';
 import { createConnection } from '@/lib/solana';
 import { decryptPrivateKey } from '@/lib/solana/wallet-generator';
 import { EmbeddedWallet } from '@/types/db';
+import { getRedisClient } from '@/lib/redis.config';
+import { WalletManagerSingleton } from '@/lib/sui/managers/WalletManager';
 
 import { getUserData, verifyUser } from './user';
 
@@ -106,3 +108,10 @@ export const embeddedWalletSendSOL = actionClient
       }
     },
   );
+
+export async function getWalletBalance(address: string) {
+  const { redisClient } = await getRedisClient();
+  // Redis operations here
+  const balance = await walletManager.getAvailableSuiBalance(address);
+  return balance;
+}

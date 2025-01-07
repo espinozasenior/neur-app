@@ -8,6 +8,7 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { ActionResponse, actionClient } from '@/lib/safe-action';
 import { generateEncryptedKeyPair } from '@/lib/solana/wallet-generator';
+import { WalletManagerSingleton } from '@/lib/solana/rinbot-sui-sdk/managers/WalletManager';
 import { PrismaUser } from '@/types/db';
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
@@ -44,7 +45,7 @@ const getOrCreateUser = actionClient
     }
 
     const createdUser = await prisma.user.create({ data: { privyId: userId } });
-    const { publicKey, encryptedPrivateKey } = await generateEncryptedKeyPair();
+    const { publicKey, encryptedPrivateKey } = await WalletManagerSingleton.generateEncryptedWallet();
     const initalWallet = await prisma.wallet.create({
       data: {
         ownerId: createdUser.id,
