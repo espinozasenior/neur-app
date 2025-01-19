@@ -47,7 +47,9 @@ export async function processAction(action: ActionWithUser) {
       action.user.wallets[0].encryptedPrivateKey,
     );
     const openaiKey = process.env.OPENAI_API_KEY!;
-    const agent = new SolanaAgentKit(privateKey, RPC_URL, openaiKey);
+    const agent = new SolanaAgentKit(privateKey, RPC_URL, { 
+      OPENAI_API_KEY: openaiKey
+    });
 
     const tools = _.cloneDeep(defaultTools);
     for (const toolName in tools) {
