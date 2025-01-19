@@ -41,8 +41,7 @@ export async function processAction(action: ActionWithUser) {
 
   try {
     const conversation = await dbGetConversation({
-      conversationId: action.conversationId,
-      isServer: true,
+      conversationId: action.conversationId
     });
 
     if (!conversation) {
