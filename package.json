@@ -17,10 +17,12 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json,js,jsx}\""
   },
   "dependencies": {
+    "@7kprotocol/sdk-ts": "^2.3.4",
     "@ai-sdk/anthropic": "^1.1.0",
     "@ai-sdk/openai": "^1.1.0",
     "@bonfida/spl-name-service": "^3.0.7",
     "@mem0/vercel-ai-provider": "^0.0.10",
+    "@mysten/sui": "^1.21.2",
     "@prisma/client": "^6.2.1",
     "@privy-io/react-auth": "^1.99.1",
     "@privy-io/server-auth": "^1.18.1",
@@ -54,6 +56,7 @@
     "cmdk": "^1.0.4",
     "date-fns": "^4.1.0",
     "framer-motion": "^11.18.1",
+    "fs": "0.0.1-security",
     "helius-sdk": "^1.4.1",
     "keyv": "4.5.4",
     "lodash": "^4.17.21",
@@ -72,8 +75,10 @@
     "react-particles": "^2.12.2",
     "react-tweet": "^3.2.1",
     "recharts": "^2.15.0",
+    "redis": "^4.7.0",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.0",
+    "rinbot-sui-sdk": "github:espinozasenior/rinbot-sui-sdk",
     "solana-agent-kit": "github:slimeonmyhead/solana-agent-kit#c571e8b59ed7d399a705578af2d58c95f7e9e826",
     "sonner": "^1.7.2",
     "swr": "^2.3.0",
@@ -101,6 +106,8 @@
     "prisma": "^6.2.1",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.8.1",
     "typescript": "^5.7.3"
   },
   "packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf"

@@ -1,4 +1,3 @@
-import { resolve } from '@bonfida/spl-name-service';
 import {
   Connection,
   LAMPORTS_PER_SOL,
@@ -8,7 +7,14 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 
+// import { getSuiClient } from "./client.js";
+import { normalizeSuiAddress } from '@mysten/sui/utils';
+import {
+  getSuiClient,
+} from "@7kprotocol/sdk-ts";
+import { formatNumber } from './../utils'
 import { RPC_URL } from '../constants';
+const network = "mainnet";
 
 export const MEMO_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
 
@@ -24,15 +30,14 @@ export interface TransferWithMemoParams {
 }
 
 export class SolanaUtils {
-  private static connection = new Connection(RPC_URL);
-
+  private static connection = getSuiClient();
   /**
    * Resolve .sol domain name to address
    * @param domain Domain name
    */
   static async resolveDomainToAddress(domain: string): Promise<string | null> {
-    const owner = await resolve(this.connection, domain);
-    return owner.toBase58();
+    const owner = await this.connection.resolveNameServiceAddress({ name: domain });
+    return owner
   }
 
   /**
@@ -43,19 +48,16 @@ export class SolanaUtils {
     try {
       let publicKeyStr = address;
 
-      // If it's a .sol domain, resolve to address first
-      if (address.toLowerCase().endsWith('.sol')) {
-        const resolvedAddress = await this.resolveDomainToAddress(address);
+      // If it's a .sui domain, resolve to address first
+      if (address.toLowerCase().endsWith('.sui')) {
+        const resolvedAddress = await this.resolveDomainToAddress(publicKeyStr);
         if (!resolvedAddress) {
           throw new Error('Failed to resolve domain name');
         }
         publicKeyStr = resolvedAddress;
       }
-
-      const balance = await this.connection.getBalance(
-        new PublicKey(publicKeyStr),
-      );
-      return balance / LAMPORTS_PER_SOL;
+      const balance = await this.connection.getBalance({ owner: publicKeyStr });
+      return Number(Number(balance.totalBalance) / 1_000_000_000);
     } catch (error) {
       console.error('Failed to fetch balance:', error);
       return 0;
@@ -114,11 +116,11 @@ export class SolanaUtils {
     const toPubkey = new PublicKey(to);
 
     // Check balance first
-    const balance = await this.connection.getBalance(fromPubkey);
-    const requiredAmount = amount * LAMPORTS_PER_SOL;
-    if (balance < requiredAmount) {
+    const balance = await this.connection.getBalance({ owner: fromPubkey.toBase58() });
+    const requiredAmount = amount;
+    if (Number(balance.totalBalance) < requiredAmount) {
       throw new Error(
-        `Insufficient balance. You have ${balance / LAMPORTS_PER_SOL} SOL but need ${amount} SOL`,
+        `Insufficient balance. You have ${balance.totalBalance} SUI but need ${amount} SUI`,
       );
     }
 
@@ -144,24 +146,27 @@ export class SolanaUtils {
       transaction.add(transferInstruction);
       transaction.add(memoInstruction);
 
-      // Get latest blockhash
-      const { blockhash } =
-        await this.connection.getLatestBlockhash('confirmed');
-      transaction.recentBlockhash = blockhash;
+      // // Get latest blockhash
+      // const { blockhash } =
+      //   await this.connection.getTransactionBlock({
+      //     digest: 'confirmed',
+      //   });
+      // transaction.recentBlockhash = blockhash;
 
-      // Sign transaction
-      const signedTransaction = await provider.signTransaction(transaction);
+      // // Sign transaction
+      // const signedTransaction = await provider.signTransaction(transaction);
 
-      // Send transaction and return signature immediately
-      const signature = await this.connection.sendRawTransaction(
-        signedTransaction.serialize(),
-        {
-          skipPreflight: false,
-          maxRetries: 5,
-          preflightCommitment: 'confirmed',
-        },
-      );
+      // // Send transaction and return signature immediately
+      // const signature = await this.connection.sendRawTransaction(
+      //   signedTransaction.serialize(),
+      //   {
+      //     skipPreflight: false,
+      //     maxRetries: 5,
+      //     preflightCommitment: 'confirmed',
+      //   },
+      // );
 
+      const signature = ''
       // Log for debugging
       console.log('Transaction sent successfully:', signature);
 
@@ -183,5 +188,14 @@ export class SolanaUtils {
       }
       throw error;
     }
+  }
+
+  static isOwnedByAddress(owner: unknown, address: string): boolean {
+    if (typeof owner !== 'object' || owner === null) return false;
+
+    if ('AddressOwner' in owner && typeof owner.AddressOwner === 'string')
+      return normalizeSuiAddress(owner.AddressOwner) === address;
+
+    return false;
   }
 }

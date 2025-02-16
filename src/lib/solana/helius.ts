@@ -1,16 +1,16 @@
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
-
-
-
 import { chunkArray } from '@/lib/utils';
 import rawKnownAddresses from '@/lib/utils/known-addresses.json';
 import { FungibleToken } from '@/types/helius/fungibleToken';
 import { NonFungibleToken } from '@/types/helius/nonFungibleToken';
-
-
-
 import { RPC_URL } from '../constants';
+import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
+import { setSuiClient, getSuiPrice, getTokenPrice } from "@7kprotocol/sdk-ts";
+import { getWalletManager } from '../sui/functions'
+const network = "mainnet";
 
+const suiClient = new SuiClient({ url: getFullnodeUrl(network) });
+setSuiClient(suiClient);
 
 export interface Holder {
   owner: string;
@@ -90,8 +90,8 @@ const fetchHelius = async (method: HeliusMethod, params: any) => {
 export const getBalance: (walletAddress: string) => Promise<number> = async (
   walletAddress: string,
 ) => {
-  const data = await fetchHelius('getBalance', [walletAddress]);
-  return Number(data.result.balance) / LAMPORTS_PER_SOL;
+  const data = await getBalance(walletAddress)
+  return Number(data);
 };
 
 export const searchWalletAssets: (walletAddress: string) => Promise<{
@@ -99,6 +99,8 @@ export const searchWalletAssets: (walletAddress: string) => Promise<{
   nonFungibleTokens: NonFungibleToken[];
 }> = async (ownerAddress: string) => {
   try {
+    //TODO: add sui support
+    const walletManager = await getWalletManager();
     const data = await fetchHelius('searchAssets', {
       ownerAddress: ownerAddress,
       tokenType: 'all',
@@ -502,3 +504,4 @@ export async function getHoldersClassification(
     totalSupply,
   };
 }
+
