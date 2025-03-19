@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { SavedPrompt } from '@prisma/client';
+import { useSolanaWallets } from '@privy-io/react-auth/solana';
 import { RiTwitterXFill } from '@remixicon/react';
 import { Attachment, JSONValue } from 'ai';
 import { useChat } from 'ai/react';
@@ -89,6 +90,7 @@ export function HomeContent() {
   const MAX_VERIFICATION_ATTEMPTS = 20;
 
   const { conversations, refreshConversations } = useConversations(user?.id);
+  const { wallets, ready } = useSolanaWallets();
 
   const resetChat = useCallback(() => {
     setShowChat(false);
@@ -276,14 +278,17 @@ export function HomeContent() {
     setVerificationAttempts(0);
 
     try {
-      const tx = await SolanaUtils.sendTransferWithMemo({
-        to: RECEIVE_WALLET_ADDRESS,
-        amount: EAP_PRICE,
-        memo: `{
+      const tx = await SolanaUtils.sendTransferWithMemo(
+        { ready, wallets },
+        {
+          to: RECEIVE_WALLET_ADDRESS,
+          amount: EAP_PRICE,
+          memo: `{
                     "type": "EAP_PURCHASE",
                     "user_id": "${user.id}"
                 }`,
-      });
+        },
+      );
 
       if (tx) {
         setVerifyingTx(tx);
