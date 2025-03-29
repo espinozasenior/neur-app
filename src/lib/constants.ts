@@ -35,3 +35,4 @@ export const filterOptions: FilterOption[] = [
     label: 'Favorites',
   },
 ];
+export const EAP_PRICE = 1.0;
