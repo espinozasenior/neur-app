@@ -1,6 +1,7 @@
 import { FilterOption } from '@/app/(user)/saved-prompts/types/prompt';
 
 import config from '../../package.json';
+import { SolanaCluster } from '@privy-io/react-auth';
 
 export const APP_VERSION = config.version;
 export const IS_BETA = true;
@@ -36,3 +37,10 @@ export const filterOptions: FilterOption[] = [
   },
 ];
 export const EAP_PRICE = 1.0;
+
+const isDev = process.env.NEXT_PUBLIC_DEV === 'true';
+console.log('process.env.DEV', isDev);
+
+export const solanaCluster: SolanaCluster = isDev
+  ? { name: 'devnet' }
+  : { name: 'mainnet-beta' };
