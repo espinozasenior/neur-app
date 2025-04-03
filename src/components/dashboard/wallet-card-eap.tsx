@@ -157,6 +157,7 @@ export function WalletCardEap({
             onClick={(e) => {
               e.stopPropagation();
               setIsSelectedProcessing(true);
+              wallet.walletPortfolio = walletPortfolio;
               onPayEap(wallet);
             }}
           >

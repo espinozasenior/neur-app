@@ -5,7 +5,10 @@ import { ConnectedSolanaWallet } from '@privy-io/react-auth';
 import { useFundWallet, useSolanaWallets } from '@privy-io/react-auth/solana';
 import { Wallet } from 'lucide-react';
 
-import { FundingWallet } from '@/app/(user)/home/data/funding-wallets';
+import {
+  EmbeddedFundingWallet,
+  FundingWallet,
+} from '@/app/(user)/home/data/funding-wallets';
 import { SolanaConnectedFundingWallet } from '@/app/(user)/home/data/funding-wallets';
 import { WalletCardEap } from '@/components/dashboard/wallet-card-eap';
 import {
@@ -25,7 +28,10 @@ interface SelectFundingWalletProps {
   displayPrompt: boolean;
   isProcessing: boolean;
   onConnectExternalWallet: () => void;
-  onSelectWallet: (wallet: EmbeddedWallet | ConnectedSolanaWallet) => void;
+  onSelectWallet: (
+    wallet: EmbeddedWallet | ConnectedSolanaWallet, // actual wallet we want to use to perform solana transactions
+    fundingWallet: FundingWallet, // wallet that contains additional metadata. Eg: wallet porfolio details from helius
+  ) => void;
   onCancel: () => void;
 }
 
@@ -122,7 +128,9 @@ export function SelectFundingWalletDialog({
                     mutateWallets={mutateWallets}
                     isProcessing={isProcessing}
                     allWalletAddresses={allWalletAddresses}
-                    onPayEap={() => onSelectWallet(wallet)}
+                    onPayEap={(fundingWallet: FundingWallet) =>
+                      onSelectWallet(wallet, fundingWallet)
+                    }
                     onFundWallet={async (fundingWallet: FundingWallet) =>
                       await fundWallet(fundingWallet.publicKey, {
                         cluster: solanaCluster,
@@ -143,12 +151,14 @@ export function SelectFundingWalletDialog({
                 {legacyWallets.map((wallet) => (
                   <WalletCardEap
                     key={wallet.publicKey}
-                    wallet={wallet}
+                    wallet={new EmbeddedFundingWallet(wallet)}
                     isEmbeddedWallet={true}
                     mutateWallets={mutateWallets}
                     isProcessing={isProcessing}
                     allWalletAddresses={allWalletAddresses}
-                    onPayEap={() => onSelectWallet(wallet)}
+                    onPayEap={(fundingWallet: FundingWallet) =>
+                      onSelectWallet(wallet, fundingWallet)
+                    }
                     onFundWallet={async (fundingWallet: FundingWallet) =>
                       await fundWallet(fundingWallet.publicKey, {
                         cluster: solanaCluster,

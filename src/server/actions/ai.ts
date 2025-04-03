@@ -149,11 +149,18 @@ export const transferToken = actionClient
       tokenAddress: publicKeySchema,
       amount: z.number(),
       tokenSymbol: z.string().describe('Symbol of the token to send'),
+      memo: z.string().optional().describe('Optional memo for the transaction'),
     }),
   )
   .action(async ({ parsedInput }) => {
-    const { walletId, receiverAddress, tokenAddress, amount, tokenSymbol } =
-      parsedInput;
+    const {
+      walletId,
+      receiverAddress,
+      tokenAddress,
+      amount,
+      tokenSymbol,
+      memo,
+    } = parsedInput;
 
     const agentResponse = await retrieveAgentKit({ walletId });
 
@@ -167,6 +174,7 @@ export const transferToken = actionClient
       new PublicKey(receiverAddress),
       amount,
       tokenAddress !== SOL_MINT ? new PublicKey(tokenAddress) : undefined,
+      memo,
     );
 
     return { success: true, data: { signature } };

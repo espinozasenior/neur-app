@@ -27,7 +27,6 @@ import { useUser } from '@/hooks/use-user';
 import { useWalletPortfolio } from '@/hooks/use-wallet-portfolio';
 import { filterOptions } from '@/lib/constants';
 import { EAP_PRICE } from '@/lib/constants';
-import { PHANTOM_WALLET_SELECT } from '@/lib/constants';
 import { EVENTS } from '@/lib/events';
 import { SolanaUtils } from '@/lib/solana';
 import {
@@ -49,6 +48,7 @@ import { FilterValue } from '../saved-prompts/types/prompt';
 import { IntegrationsGrid } from './components/integrations-grid';
 import { SelectFundingWalletDialog } from './components/select-funding-wallet';
 import { ConversationInput } from './conversation-input';
+import { FundingWallet } from './data/funding-wallets';
 import { getRandomSuggestions } from './data/suggestions';
 import { SuggestionCard } from './suggestion-card';
 
@@ -288,7 +288,10 @@ export function HomeContent() {
     setDisplayPrompt(true);
   };
 
-  const handlePurchase = async (wallet: EmbeddedWallet | ConnectedSolanaWallet) => {
+  const handlePurchase = async (
+    wallet: EmbeddedWallet | ConnectedSolanaWallet,
+    fundingWallet: FundingWallet,
+  ) => {
     if (!user) return;
     setIsProcessing(true);
     setVerificationAttempts(0);
@@ -303,6 +306,7 @@ export function HomeContent() {
                 }`,
         },
         wallet,
+        fundingWallet
       );
 
       if (tx) {
@@ -592,7 +596,9 @@ export function HomeContent() {
         {mainContent}
         <SelectFundingWalletDialog
           isProcessing={isProcessing}
-          onSelectWallet={async (wallet) => await handlePurchase(wallet)}
+          onSelectWallet={async (wallet, fundingWallet) =>
+            await handlePurchase(wallet, fundingWallet)
+          }
           displayPrompt={displayPrompt}
           onCancel={() => setDisplayPrompt(false)}
           onConnectExternalWallet={connectWallet}

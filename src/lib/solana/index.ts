@@ -8,12 +8,13 @@ import {
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { WalletAdapter } from 'solana-agent-kit';
 
+import { FundingWallet } from '@/app/(user)/home/data/funding-wallets';
+import { searchWalletAssets } from '@/lib/solana/helius';
+import { transferToken } from '@/server/actions/ai';
 import { EmbeddedWallet } from '@/types/db';
 
 import { RPC_URL } from '../constants';
-import { error } from 'console';
 
 export const MEMO_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
 
@@ -122,18 +123,17 @@ export class SolanaUtils {
   static async sendTransferWithMemo(
     params: TransferWithMemoParams,
     wallet: EmbeddedWallet | ConnectedSolanaWallet,
+    fundingWallet: FundingWallet,
   ): Promise<string | null> {
     if (!wallet) {
       throw new Error('No valid wallets selected');
     }
-
+    const { to, amount, memo } = params;
     if (this.isConnectedSolanaWallet(wallet)) {
-      console.log('wallet is connected');
       const connectedSolanaWallet = wallet as ConnectedSolanaWallet;
       if (!connectedSolanaWallet.address) {
         throw new Error('Wallet not connected');
       }
-      const { to, amount, memo } = params;
       const fromPubkey = new PublicKey(connectedSolanaWallet.address);
       const toPubkey = new PublicKey(to);
 
@@ -213,10 +213,42 @@ export class SolanaUtils {
         throw error;
       }
     } else {
-      console.log('wallet is embedded');
       const embeddedWallet = wallet as EmbeddedWallet;
-      // TODO: handle embedded wallet transfer
-      return null;
+      const fromPubkey = new PublicKey(embeddedWallet.publicKey);
+      if (!fromPubkey) {
+        throw new Error('Invalid sender address.');
+      }
+
+      // Check balance first
+      const balance = await this.connection.getBalance(fromPubkey);
+      const requiredAmount = amount * LAMPORTS_PER_SOL;
+      if (balance < requiredAmount) {
+        throw new Error(
+          `Insufficient balance. You have ${balance / LAMPORTS_PER_SOL} SOL but need ${amount} SOL`,
+        );
+      }
+      if (fundingWallet.walletPortfolio) {
+        const { walletPortfolio } = fundingWallet;
+        const selectedTokenData = walletPortfolio.fungibleTokens.find(
+          (token) => token.content.metadata.symbol === 'SOL',
+        );
+        if (selectedTokenData) {
+          const response = await transferToken({
+            walletId: embeddedWallet.id,
+            receiverAddress: to,
+            tokenAddress: selectedTokenData.id,
+            amount: parseFloat(`${amount}`),
+            tokenSymbol: 'SOL',
+            memo: memo,
+          });
+          if (!response?.data?.success || !response?.data?.data) {
+            throw new Error(`Transaction failed. Please try again.`);
+          }
+          const { signature } = response.data.data;
+          return signature;
+        }
+      }
+      throw new Error(`Transaction failed. Please try again.`);
     }
   }
 }
