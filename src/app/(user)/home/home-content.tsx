@@ -99,8 +99,10 @@ export function HomeContent() {
     // Unset current filter if selected again
     if (value === filter) {
       setFilter(DEFAULT_FILTER);
+      localStorage.setItem('savedPromptsFilterPreference', DEFAULT_FILTER);
     } else {
       setFilter(value);
+      localStorage.setItem('savedPromptsFilterPreference', value);
     }
     setPaginationIndex(0);
   }
@@ -124,6 +126,16 @@ export function HomeContent() {
 
     return promptsToSort;
   }, [filter, savedPrompts]);
+
+  function fetchFilterPreference() {
+    const savedFilter = localStorage.getItem('savedPromptsFilterPreference');
+    if (savedFilter) {
+      setFilter(savedFilter as FilterValue);
+    } else {
+      setFilter(DEFAULT_FILTER);
+      localStorage.setItem('savedPromptsFilterPreference', DEFAULT_FILTER);
+    }
+  }
 
   function sortPrompts(
     prompts: SavedPrompt[],
@@ -157,6 +169,7 @@ export function HomeContent() {
       setIsFetchingSavedPrompts(false);
     }
     fetchSavedPrompts();
+    fetchFilterPreference();
   }, []);
 
   const { messages, input, handleSubmit, setInput } = useChat({
