@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { Check, Filter } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Filter } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { FilterOption, FilterValue } from '../types/prompt';
 
 interface FilterDropdownProps {
+  displayAtHomePage?: boolean;
   disabled: boolean;
   filter: FilterValue;
   filterOptions: FilterOption[];
@@ -29,6 +30,7 @@ interface FilterDropdownProps {
 }
 
 export function FilterDropdown({
+  displayAtHomePage = false,
   disabled,
   filter,
   filterOptions,
@@ -41,16 +43,28 @@ export function FilterDropdown({
       <PopoverTrigger asChild>
         <Button
           disabled={disabled}
-          variant="outline"
+          variant={displayAtHomePage ? 'ghost' : 'outline'}
           role="combobox"
           aria-expanded={open}
-          className="w-auto justify-between"
+          className={cn(
+            displayAtHomePage
+              ? 'px-1 pb-0 text-sm font-medium text-muted-foreground/80 hover:bg-transparent'
+              : 'w-auto justify-between',
+          )}
         >
           {
             filterOptions.find((filterOption) => filterOption.value === filter)
               ?.label
           }
-          <Filter className="opacity-50" />
+          {displayAtHomePage ? (
+            open ? (
+              <ChevronUp size={13} />
+            ) : (
+              <ChevronDown size={13} />
+            )
+          ) : (
+            <Filter className="opacity-50" />
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">

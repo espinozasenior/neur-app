@@ -9,7 +9,7 @@ import { SavedPrompt } from '@prisma/client';
 import { RiTwitterXFill } from '@remixicon/react';
 import { Attachment, JSONValue } from 'ai';
 import { useChat } from 'ai/react';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2, Dot, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -23,6 +23,7 @@ import TypingAnimation from '@/components/ui/typing-animation';
 import { useConversations } from '@/hooks/use-conversations';
 import { useUser } from '@/hooks/use-user';
 import { useWalletPortfolio } from '@/hooks/use-wallet-portfolio';
+import { filterOptions } from '@/lib/constants';
 import { EVENTS } from '@/lib/events';
 import { SolanaUtils } from '@/lib/solana';
 import {
@@ -38,6 +39,8 @@ import {
   setSavedPromptLastUsedAt,
 } from '@/server/actions/saved-prompt';
 
+import { FilterDropdown } from '../saved-prompts/components/filter-dropdown';
+import { FilterValue } from '../saved-prompts/types/prompt';
 import { IntegrationsGrid } from './components/integrations-grid';
 import { ConversationInput } from './conversation-input';
 import { getRandomSuggestions } from './data/suggestions';
@@ -66,11 +69,15 @@ function SectionTitle({ children }: SectionTitleProps) {
   );
 }
 
+const DEFAULT_FILTER: FilterValue = 'favorites';
+
 export function HomeContent() {
   const pathname = usePathname();
   const [savedPrompts, setSavedPrompts] = useState<SavedPrompt[]>([]);
+  const [paginationIndex, setPaginationIndex] = useState<number>(0);
   const [isFetchingSavedPrompts, setIsFetchingSavedPrompts] =
     useState<boolean>(true);
+  const [filter, setFilter] = useState<FilterValue>(DEFAULT_FILTER);
   const suggestions = useMemo(() => getRandomSuggestions(4), []);
   const [showChat, setShowChat] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -88,12 +95,61 @@ export function HomeContent() {
     setChatId(uuidv4());
   }, []);
 
+  function updateFilter(value: FilterValue) {
+    // Unset current filter if selected again
+    if (value === filter) {
+      setFilter(DEFAULT_FILTER);
+    } else {
+      setFilter(value);
+    }
+    setPaginationIndex(0);
+  }
+
+  // Primary Filter: Filter based on options, e.g. Recently used (or) Edited recently
+  const primaryFilteredPrompts = useMemo(() => {
+    if (filter === 'favorites') {
+      return savedPrompts.filter((prompt) => prompt.isFavorite);
+    }
+
+    const promptsToSort = [...savedPrompts];
+    if (filter === 'recentlyUsed') {
+      sortPrompts(promptsToSort, 'lastUsedAt');
+    } else if (filter === 'editedRecently') {
+      sortPrompts(promptsToSort, 'updatedAt');
+    } else if (filter === 'latest') {
+      sortPrompts(promptsToSort, 'createdAt');
+    } else if (filter === 'oldest') {
+      sortPrompts(promptsToSort, 'createdAt', true);
+    }
+
+    return promptsToSort;
+  }, [filter, savedPrompts]);
+
+  function sortPrompts(
+    prompts: SavedPrompt[],
+    property: keyof SavedPrompt,
+    swapComparison = false,
+  ) {
+    prompts.sort((a, b) => {
+      const dateA =
+        a[property] && typeof a[property] !== 'boolean'
+          ? new Date(a[property]).getTime()
+          : 0;
+
+      const dateB =
+        b[property] && typeof b[property] !== 'boolean'
+          ? new Date(b[property]).getTime()
+          : 0;
+
+      return swapComparison ? dateA - dateB : dateB - dateA;
+    });
+  }
+
   useEffect(() => {
     async function fetchSavedPrompts() {
       try {
         const res = await getSavedPrompts();
         const savedPrompts = res?.data?.data || [];
-
         setSavedPrompts(savedPrompts);
       } catch (err) {
         console.error(err);
@@ -429,27 +485,55 @@ export function HomeContent() {
             {!isFetchingSavedPrompts && savedPrompts.length !== 0 && (
               <BlurFade delay={0.3}>
                 <div className="space-y-2">
-                  <SectionTitle>Saved Prompts</SectionTitle>
+                  <FilterDropdown
+                    displayAtHomePage={true}
+                    disabled={isFetchingSavedPrompts}
+                    filter={filter}
+                    filterOptions={filterOptions}
+                    updateFilter={updateFilter}
+                  />
+
                   {isFetchingSavedPrompts ? (
                     <div className="flex w-full items-center justify-center pt-20">
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-4">
-                      {savedPrompts
-                        .slice(0, Math.min(4, savedPrompts.length))
-                        .map((savedPrompt, index) => (
-                          <SuggestionCard
-                            id={savedPrompt.id}
-                            useSubtitle={true}
-                            title={savedPrompt.title}
-                            subtitle={savedPrompt.content}
-                            key={savedPrompt.id}
-                            delay={0.3 + index * 0.1}
-                            onSelect={setInput}
-                          />
-                        ))}
-                    </div>
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        {primaryFilteredPrompts
+                          .slice(4 * paginationIndex, (paginationIndex + 1) * 4)
+                          .map((savedPrompt, index) => (
+                            <SuggestionCard
+                              id={savedPrompt.id}
+                              useSubtitle={true}
+                              title={savedPrompt.title}
+                              subtitle={savedPrompt.content}
+                              key={savedPrompt.id}
+                              delay={0.3 + index * 0.1}
+                              onSelect={setInput}
+                            />
+                          ))}
+                      </div>
+
+                      <div className="flex w-full flex-row items-center justify-center">
+                        {Array(Math.ceil(primaryFilteredPrompts.length / 4))
+                          .fill(0)
+                          .map((_, i) => (
+                            <Dot
+                              height={30}
+                              width={30}
+                              key={i}
+                              onClick={() => setPaginationIndex(i)}
+                              className={cn(
+                                paginationIndex === i
+                                  ? 'opacity-100'
+                                  : 'opacity-40 hover:opacity-70',
+                                'cursor-pointer',
+                              )}
+                            />
+                          ))}
+                      </div>
+                    </>
                   )}
                 </div>
               </BlurFade>
