@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 
 import { Input } from '@/components/ui/input';
 import { useUser } from '@/hooks/use-user';
+import { filterOptions } from '@/lib/constants';
 import {
   createSavedPrompt,
   deleteSavedPrompt,
@@ -27,29 +28,6 @@ const EMPTY_ACTION: PromptAction = {
   action: null,
   id: null,
 };
-
-const filterOptions: FilterOption[] = [
-  {
-    value: 'recentlyUsed',
-    label: 'Recently Used',
-  },
-  {
-    value: 'editedRecently',
-    label: 'Edited Recently',
-  },
-  {
-    value: 'latest',
-    label: 'Newest First',
-  },
-  {
-    value: 'oldest',
-    label: 'Oldest First',
-  },
-  {
-    value: 'favorites',
-    label: 'Favorites',
-  },
-];
 
 export default function SavedPromptsPage() {
   /**
@@ -399,7 +377,7 @@ export default function SavedPromptsPage() {
                   </button>
                 </div>
               </div>
-              <div className="text-xs text-muted-foreground/80">
+              <div className="truncate text-xs text-muted-foreground/80">
                 {prompt.content.trim().slice(0, 150) + '...'}
               </div>
             </motion.div>
